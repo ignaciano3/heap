@@ -2,6 +2,7 @@
 #include "heap.h"
 #include <stdio.h>
 #include <stdlib.h>
+#define LARGO_PRUEBA_VOLUMEN 100000
 
 void pruebas_heap_catedra(void);
 void pruebas_heap_estudiante(void);
@@ -42,6 +43,7 @@ static void pruebas_heap(){
     print_test("El primero es 10", heap_ver_max(heap) == &arr_[2]);
     print_test("Desencolar es 10", heap_desencolar(heap) == &arr_[2]);
     print_test("Desencolar es 9", heap_desencolar(heap) == &arr_[1]);
+
     int a1 = 3, b1 = 4, c1= 5;
     heap_encolar(heap, &a1);
     heap_encolar(heap, &b1);
@@ -51,22 +53,28 @@ static void pruebas_heap(){
 }
 
 static void pruebas_heap_sort(){
-    int arr[] = {4,1,7,5,3,2,8,9,10,6,11};
-    int* arr_p[11];
-    for (int x = 0; x < 11; x++){
-        arr_p[x] = &arr[x];
+    int arr[LARGO_PRUEBA_VOLUMEN];
+    int* arr_p[LARGO_PRUEBA_VOLUMEN];
+    for (int i = 0; i < LARGO_PRUEBA_VOLUMEN; i++){
+        arr[i] = rand();
+        arr_p[i] = &arr[i];
+
     }
 
-    heap_sort((void*)arr_p, 11, cmp);
-    for (int x = 0; x<11; x++){
-        printf("%i ", *(int*)arr_p[x]);
-        print_test("Heapsort: ", *(int*)arr_p[x] == x+1);
+    heap_sort((void*)arr_p, LARGO_PRUEBA_VOLUMEN, cmp);
+
+    bool error = false;
+    for (int x = 0; x<LARGO_PRUEBA_VOLUMEN-1; x++){
+        if (cmp(arr_p[x], arr_p[x+1]) > 0){
+            error = true;
+        }
     }
+    print_test("Heapsort ordena correctamente ", !error);
 }
 
 void pruebas_heap_estudiante(void){
     printf("\nPRUEBAS HEAP ESTUDIANTE\n");
     pruebas_heap();
-    printf("\nPRUEBAS HEAPSORT\n");
+    printf("\nPRUEBAS HEAPSORT ESTUDIANTE\n");
     pruebas_heap_sort();
 }
