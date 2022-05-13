@@ -1,5 +1,5 @@
 #include "testing.h"
-
+#include "heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,10 +27,6 @@ int main(int argc, char *argv[]) {
     return failure_count() > 0;
 }
 #endif
-
-
-
-#include "heap.h"
 
 // de la libreria de qsort
 int cmp (const void * a, const void * b) {
@@ -63,15 +59,14 @@ static void pruebas_heap_sort(){
 
     heap_sort((void*)arr_p, 11, cmp);
     for (int x = 0; x<11; x++){
-        printf("%i", *(int*)arr_p[x]);
+        printf("%i ", *(int*)arr_p[x]);
         print_test("Heapsort: ", *(int*)arr_p[x] == x+1);
     }
-
 }
 
-
-int main() {
+void pruebas_heap_estudiante(void){
+    printf("\nPRUEBAS HEAP ESTUDIANTE\n");
     pruebas_heap();
-    //pruebas_heap_sort();
-    return failure_count() > 0;
+    printf("\nPRUEBAS HEAPSORT\n");
+    pruebas_heap_sort();
 }

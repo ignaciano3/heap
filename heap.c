@@ -2,8 +2,14 @@
 #include "heap.h"
 #define CAPACIDAD_STANDARD 10
 
+void swap(void **a, void **b) {
+    void* temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
 typedef struct heap {
-    cmp_func_t cmp_func_t;
+    cmp_func_t cmp;
     size_t capacidad; // Representa el largo del datos
     size_t cantidad; // Cantidad de elementos
     void** datos;
@@ -14,7 +20,7 @@ heap_t *heap_crear(cmp_func_t cmp) {
     if (heap == NULL) return NULL;
     heap->capacidad = CAPACIDAD_STANDARD;
     heap->cantidad = 0;
-    heap->cmp_func_t = cmp;
+    heap->cmp = cmp;
     heap->datos = malloc (sizeof (void*) * CAPACIDAD_STANDARD);
     if (heap->datos == NULL){
         free(heap);
@@ -23,41 +29,24 @@ heap_t *heap_crear(cmp_func_t cmp) {
     return heap;
 }
 
-
 void heap_redimensionar_datos(heap_t *heap, size_t nuevaCapacidad){
     heap->datos = realloc(heap->datos, sizeof (void*) * nuevaCapacidad);
     if (heap->datos) heap->capacidad = nuevaCapacidad;
 }
 
-// Despues borro esto
-#include <stdio.h>
-void heap_imprimir(heap_t *heap) {
-    printf("I : %zu\n", heap->cantidad);
-    printf("N : %zu\n", heap->capacidad);
-    printf("Arreglo:\n");
-    for (int i = 0; i<heap->cantidad; i++){
-        printf("%d ", *(int*)heap->datos[i]);
-
-    }
-}
-
-void downHeap(heap_t* heap, size_t padre) {
+void downHeap(void** datos, cmp_func_t cmp, size_t cantidad, size_t padre){
     size_t h_izq = 2 * padre + 1;
     size_t h_der = 2 * padre + 2;
-    if (h_izq >= heap->cantidad) return;
+    if (h_izq >= cantidad) return;
 
     size_t min = h_izq;
-    if (h_der < heap->cantidad)
-        if (heap->cmp_func_t(heap->datos[h_izq], heap->datos[h_der]) < 0)
-            min = h_der;
+    if (h_der < cantidad && cmp(datos[h_izq], datos[h_der]) < 0)
+        min = h_der;
 
-    if (heap->cmp_func_t(heap->datos[min], heap->datos[padre]) > 0){
-        void* aux = heap->datos[min];
-        heap->datos[min] = heap->datos[padre];
-        heap->datos[padre] = aux;
-        downHeap(heap, min);
+    if (cmp(datos[min], datos[padre]) > 0){
+        swap(&datos[min], &datos[padre]);
+        downHeap(datos, cmp, cantidad, min);
     }
-
 }
 
 heap_t *heap_crear_arr(void **arreglo, size_t n, cmp_func_t cmp) {
@@ -88,19 +77,14 @@ bool heap_esta_vacio(const heap_t *heap) {
     return heap->cantidad == 0;
 }
 
-
-void upHeap(heap_t* heap, size_t hijo){
+void upHeap(void** datos, cmp_func_t cmp, size_t cantidad, size_t hijo){
     if (hijo == 0) return;
     size_t padre = (hijo-1)/2;
-    if (heap->cmp_func_t(heap->datos[hijo], heap->datos[padre]) > 0){
-        void* aux = heap->datos[hijo];
-        heap->datos[hijo] = heap->datos[padre];
-        heap->datos[padre] = aux;
-        upHeap(heap, padre);
+    if (cmp(datos[hijo], datos[padre]) > 0){
+        swap(&datos[hijo], &datos[padre]);
+        upHeap(datos, cmp, cantidad, padre);
     }
-
 }
-
 
 bool heap_encolar(heap_t *heap, void *elem) {
     if (heap->cantidad == heap->capacidad){
@@ -109,7 +93,7 @@ bool heap_encolar(heap_t *heap, void *elem) {
     }
 
     heap->datos[heap->cantidad] = elem;
-    upHeap(heap, heap->cantidad);
+    upHeap(heap->datos, heap->cmp, heap->cantidad, heap->cantidad);
     heap->cantidad++;
     return true;
 }
@@ -133,7 +117,7 @@ void *heap_desencolar(heap_t *heap) {
     heap->datos[0] = heap->datos[heap->cantidad];
     heap->datos[heap->cantidad] = NULL;
 
-    downHeap(heap, 0);
+    downHeap(heap->datos, heap->cmp, heap->cantidad, 0);
 
     if (heap->cantidad <= heap->capacidad/4){
         heap_redimensionar_datos(heap, heap->capacidad/2);
@@ -145,4 +129,12 @@ void *heap_desencolar(heap_t *heap) {
 
 void heap_sort(void **elementos, size_t cant, cmp_func_t cmp) {
 
+    for (int i = (int)cant/2-1; i>= 0; i--){
+        downHeap(elementos, cmp, cant, i);
+    }
+
+    for (int i = (int)cant - 1; i >= 0; i--) {
+        swap(&elementos[0], &elementos[i]);
+        downHeap(elementos, cmp, i, 0);
+    }
 }
