@@ -16,6 +16,10 @@ heap_t *heap_crear(cmp_func_t cmp) {
     heap->cantidad = 0;
     heap->cmp_func_t = cmp;
     heap->datos = malloc (sizeof (void*) * CAPACIDAD_STANDARD);
+    if (heap->datos == NULL){
+        free(heap);
+        return NULL;
+    }
     return heap;
 }
 
@@ -58,7 +62,7 @@ void downHeap(heap_t* heap, size_t padre) {
 
 heap_t *heap_crear_arr(void **arreglo, size_t n, cmp_func_t cmp) {
     heap_t* heap = heap_crear(cmp);
-    if (heap->datos == NULL) return NULL;
+    if (heap == NULL) return NULL;
     for (int i = 0; i < n; i++){
         heap_encolar(heap, arreglo[i]);
     }
